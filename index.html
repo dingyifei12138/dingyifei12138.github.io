@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>丁一菲 | 我的数字笔记本</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        y2k: {
+                            pink: '#ff74a8',
+                            light: '#ffe6f1',
+                            border: '#ff4780',
+                            paper: '#fff8fb'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        *{scroll-behavior:smooth;box-sizing:border-box;}
+        body{
+            background:#ffc7dd;
+            background-image:radial-gradient(#ffb0d0 6%,transparent 6%);
+            background-size:22px 22px;
+            font-family:"Microsoft YaHei",sans-serif;
+            padding:20px 10px;
+        }
+        /* 浏览器窗口外框 */
+        .browser-frame{
+            border:4px solid #ff4780;
+            border-radius:18px;
+            overflow:hidden;
+            max-width:1200px;
+            margin:0 auto;
+            box-shadow:0 12px 30px rgba(255,71,128,0.28);
+            animation:pageFade 0.8s ease;
+        }
+        @keyframes pageFade {
+            from{opacity:0;transform:translateY(10px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        .browser-header{
+            background:linear-gradient(90deg,#ff86b4,#ff4780);
+            height:40px;
+            display:flex;
+            align-items:center;
+            padding:0 14px;
+            gap:8px;
+        }
+        .dot{width:13px;height:13px;border-radius:50%;}
+        /* 笔记本主容器 + 装订环 */
+        .notebook-wrap{
+            display:grid;
+            grid-template-columns:250px 1fr;
+            background:#fff8fb;
+            background-image:linear-gradient(#ffd4e3 1px,transparent 1px);
+            background-size:100% 32px;
+            position:relative;
+        }
+        /* 装订环装饰 + 摆动动画 */
+        .binding-rings{
+            position:absolute;
+            left:242px;
+            top:0;
+            bottom:0;
+            width:16px;
+            display:flex;
+            flex-direction:column;
+            justify-content:space-around;
+            padding:30px 0;
+            z-index:10;
+        }
+        .ring{
+            width:14px;
+            height:28px;
+            border:3px solid #ff4780;
+            border-radius:99px;
+            background:transparent;
+            animation:ringSwing 3s ease-in-out infinite alternate;
+        }
+        @keyframes ringSwing{
+            from{transform:rotate(-2deg);}
+            to{transform:rotate(2deg);}
+        }
+        /* 左侧侧边栏 */
+        .sidebar{
+            background:#fff0f7;
+            padding:20px 12px;
+            border-right:2px solid #ffb5d0;
+            display:flex;
+            flex-direction:column;
+            align-items:center;
+        }
+        .avatar-box{
+            border:3px solid #ff74a8;
+            border-radius:14px;
+            overflow:hidden;
+            width:130px;height:130px;
+            background:#fff;
+            margin-bottom:10px;
+            transition:0.3s;
+        }
+        .avatar-box:hover{
+            transform:scale(1.03);
+            box-shadow:0 4px 12px #ff74a866;
+        }
+        .avatar-box img{width:100%;height:100%;object-fit:cover;}
+        .folder-btn{
+            width:100%;
+            padding:9px 10px;
+            margin:4px 0;
+            border:2px solid #ffb5d0;
+            border-radius:10px;
+            background:#ffffff;
+            text-align:left;
+            cursor:pointer;
+            transition:0.24s;
+            color:#c82f78;
+            font-size:14px;
+        }
+        .folder-btn:hover,.folder-btn.active{
+            background:#ff74a8;color:#fff;
+            transform:translateX(3px);
+        }
+        /* 音乐播放器组件 */
+        .music-player{
+            width:100%;
+            background:#fff;
+            border:2px solid #ffb5d0;
+            border-radius:12px;
+            padding:10px;
+            margin-top:16px;
+        }
+        .player-btn{
+            background:#ff74a8;color:white;border:none;border-radius:6px;padding:4px 8px;
+            cursor:pointer;
+            transition:0.2s;
+        }
+        .player-btn:hover{background:#ff4780;}
+        .visitor-count{
+            margin-top:12px;
+            font-size:12px;color:#c82f78;
+        }
+        /* 主内容区域 */
+        .main-area{
+            padding:22px 24px;
+            position:relative;
+        }
+        /* 右上角欢迎消息框 弹出动画 */
+        .welcome-box{
+            position:absolute;
+            top:10px;right:10px;
+            border:2px solid #ff74a8;
+            background:#fff;
+            border-radius:12px;
+            padding:10px;
+            max-width:260px;
+            z-index:5;
+            animation:bounceIn 1s ease;
+        }
+        @keyframes bounceIn{
+            0%{opacity:0;transform:translateY(-15px);}
+            60%{transform:translateY(4px);}
+            100%{opacity:1;transform:translateY(0);}
+        }
+        .panel{display:none;animation:panelShow 0.45s ease;}
+        .panel.active{display:block;}
+        @keyframes panelShow{
+            from{opacity:0;transform:translateY(8px);}
+            to{opacity:1;transform:translateY(0);}
+        }
+        .card{
+            background:#fff;border:2px solid #ffb5d0;border-radius:14px;
+            padding:14px;box-shadow:0 5px 12px rgba(255,116,168,0.16);
+            transition:0.3s;
+        }
+        .card:hover{
+            box-shadow:0 8px 18px rgba(255,116,168,0.25);
+            transform:translateY(-2px);
+        }
+        .info-line{
+            background:#fff0f7;border-left:4px solid #ff74a8;
+            padding:9px 10px;border-radius:8px;margin-bottom:8px;
+        }
+        .photo-item{
+            border:4px solid #fff;border-radius:16px;overflow:hidden;
+            box-shadow:0 7px 16px rgba(255,116,168,0.22);
+            transition:transform 0.3s ease;background:#fff;height:210px;
+        }
+        .photo-item:hover{transform:scale(1.04);}
+        .photo-item img{width:100%;height:100%;object-fit:cover;display:block;}
+        .tag{
+            display:inline-block;background:#ffe6f1;color:#c82f78;
+            padding:5px 12px;border-radius:999px;font-size:13px;margin:3px 3px 0 0;
+            transition:0.2s;
+        }
+        .tag:hover{background:#ff74a8;color:white;}
+        .submit-btn{
+            background:linear-gradient(135deg,#ff86b4,#ff4780);
+            color:#fff;padding:9px 20px;border-radius:99px;border:none;
+            cursor:pointer;transition:0.25s;
+        }
+        .submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 16px rgba(255,71,128,0.35);}
+        /* 装饰小花 */
+        .flower-deco{color:#ff4780;font-size:22px;animation:flowerRotate 4s linear infinite;display:inline-block;}
+        @keyframes flowerRotate{
+            from{transform:rotate(0deg);}
+            to{transform:rotate(360deg);}
+        }
+        @media (max-width:768px){
+            .notebook-wrap{grid-template-columns:1fr;}
+            .binding-rings{display:none;}
+            .sidebar{border-right:none;border-bottom:3px solid #ffb5d0;}
+            .welcome-box{position:relative;max-width:100%;margin-bottom:12px;}
+        }
+    </style>
+</head>
+<body>
+<div class="browser-frame">
+    <div class="browser-header">
+        <span class="dot bg-red-400"></span>
+        <span class="dot bg-yellow-300"></span>
+        <span class="dot bg-green-400"></span>
+        <span class="ml-3 text-white text-sm">dingyifei_notebook.html</span>
+    </div>
+    <div class="notebook-wrap">
+        <!-- 装订环装饰 -->
+        <div class="binding-rings">
+            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+            <div class="ring"></div><div class="ring"></div><div class="ring"></div>
+        </div>
+        <!-- 左侧侧边栏 -->
+        <aside class="sidebar">
+            <div class="avatar-box">
+                <img src="avatar.jpg" alt="头像">
+            </div>
+            <h2 class="text-lg font-bold text-pink-600">丁一菲</h2>
+            <p class="text-xs text-pink-400 mb-3">湖南大学 · 经济学</p>
+
+            <button class="folder-btn active" onclick="switchPanel('about')"><i class="fa fa-folder-open mr-1"></i> 关于我</button>
+            <button class="folder-btn" onclick="switchPanel('hobby')"><i class="fa fa-folder mr-1"></i> 兴趣爱好</button>
+            <button class="folder-btn" onclick="switchPanel('hometown')"><i class="fa fa-folder mr-1"></i> 我的家乡</button>
+            <button class="folder-btn" onclick="switchPanel('contact')"><i class="fa fa-folder mr-1"></i> 联系方式</button>
+
+            <!-- Y2K音乐播放器 -->
+            <div class="music-player">
+                <p class="text-xs mb-2">🎵 Pink Memory</p>
+                <div class="flex gap-2">
+                    <button class="player-btn"><i class="fa fa-step-backward"></i></button>
+                    <button class="player-btn"><i class="fa fa-play"></i></button>
+                    <button class="player-btn"><i class="fa fa-step-forward"></i></button>
+                </div>
+            </div>
+            <div class="visitor-count">👀 访客：00822148</div>
+            <p class="text-xs text-pink-400 mt-4">©2026 丁一菲</p>
+        </aside>
+
+        <!-- 右侧主内容 -->
+        <main class="main-area">
+            <!-- 右上角欢迎消息框 -->
+            <div class="welcome-box">
+                <span class="flower-deco">✿</span>
+                <p class="text-sm font-bold">欢迎来到我的频道✨</p>
+                <p class="text-xs text-pink-600 mt-1">很高兴你浏览我的数字笔记本</p>
+            </div>
+
+            <!-- 关于我 -->
+            <section id="about" class="panel active">
+                <div class="card mb-4">
+                    <p>Hello！这是我的线上个人笔记本<span class="flower-deco">✿</span>，在这里你可以认识我，了解我的学习、生活与经历。</p>
+                </div>
+                <h1 class="text-2xl font-bold mb-3">关于我</h1>
+                <div class="card">
+                    <div class="info-line"><b>姓名：</b>丁一菲</div>
+                    <div class="info-line"><b>年龄：</b>20 岁</div>
+                    <div class="info-line"><b>星座：</b>狮子座 🦁</div>
+                    <div class="info-line"><b>家乡：</b>湖北十堰</div>
+                    <div class="info-line"><b>学校：</b>湖南大学</div>
+                    <div class="info-line"><b>专业：</b>经济学专业</div>
+                    <hr class="my-3 border-pink-200">
+                    <p>我是一名经济学专业大三学生，秉持着“把日子过成诗，也把数据看懂”的想法，在经济学的世界持续探索。在校期间担任班级团支书，同时曾在青志协、宣传部任职，拥有丰富的学生工作经历。在学生工作中，我学会沟通协调、活动策划与宣传排版，锻炼了自己的责任心与组织能力。</p>
+                    <p class="mt-2">专业方面，我对宏观经济、金融领域抱有浓厚兴趣，参与过国创赛并获得银奖，拥有央行实习经历，目前正在准备CFA考试。我喜欢把书本上的经济理论，和现实社会中的现象结合思考。</p>
+                    <p class="mt-2">生活里，我热爱旅行、摄影，喜欢走到不同城市感受风土人情。性格踏实认真，待人真诚，愿意持续学习、不断突破自我。期待在这里与你相遇，一起交流学习、生活与旅行中的故事！</p>
+                </div>
+                <!-- 简历下载按钮 -->
+                <div class="card mt-4">
+                    <h3 class="font-bold mb-2">📄 个人简历</h3>
+                    <p class="text-sm mb-3">简历里包含我的实习经历、竞赛项目、学生工作与技能证书。点击下方按钮，下载PDF文件查看完整个人履历。</p>
+                    <a href="resume.pdf" download="丁一菲_个人简历.pdf">
+                        <button class="submit-btn">⬇️ 下载简历PDF</button>
+                    </a>
+                </div>
+            </section>
+
+            <!-- 兴趣爱好（3张图片） -->
+            <section id="hobby" class="panel">
+                <h1 class="text-2xl font-bold mb-4">兴趣爱好 <span class="flower-deco">✿</span></h1>
+                <p class="mb-4">学习之外，爱好是我生活里重要的调味剂。在繁忙的课业与学生工作之余，我会留出时间去做喜欢的事情，记录日常、拓宽眼界，保持对生活的热爱。</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="card text-center">
+                        <i class="fa fa-camera text-3xl text-pink-500 mb-2"></i>
+                        <h3 class="font-bold">摄影</h3>
+                        <p class="text-sm text-pink-500">喜欢用镜头捕捉生活碎片，在外出旅行时记录山川湖海，也随手定格日常里温柔的瞬间。摄影教会我留心身边的美好，留住转瞬即逝的风景。</p>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fa fa-cutlery text-3xl text-pink-500 mb-2"></i>
+                        <h3 class="font-bold">美食探索</h3>
+                        <p class="text-sm text-pink-500">每到一座城市，我都会去寻找当地特色美食。美食是一座城市的烟火载体，品尝风味的同时，也感受当地独特的饮食文化。</p>
+                    </div>
+                    <div class="card text-center">
+                        <i class="fa fa-star text-3xl text-pink-500 mb-2"></i>
+                        <h3 class="font-bold">追星</h3>
+                        <p class="text-sm text-pink-500">我喜欢从优秀的人身上汲取向上的力量，在忙碌疲惫的时候获得精神鼓励，保持积极、热烈、永远向前的生活态度。</p>
+                    </div>
+                </div>
+                <h2 class="text-xl font-bold mb-3">生活相册</h2>
+                <p class="mb-3">相册里存放了我旅行、外出游玩时拍下的照片，每一张照片背后，都是一段难忘的旅途回忆。</p>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="photo-item">
+                        <img src="hobby1.jpg" alt="爱好照片1">
+                    </div>
+                    <div class="photo-item">
+                        <img src="hobby2.jpg" alt="爱好照片2">
+                    </div>
+                    <div class="photo-item">
+                        <img src="hobby3.jpg" alt="爱好照片3">
+                    </div>
+                </div>
+            </section>
+
+            <!-- 我的家乡（3张图片） -->
+            <section id="hometown" class="panel">
+                <h1 class="text-2xl font-bold mb-4">我的家乡 · 湖北十堰 <span class="flower-deco">✿</span></h1>
+                <p class="mb-4">十堰坐落于湖北省西北部，是一座被群山环抱的山城。这里远离大城市的喧嚣，山水相依，空气清新，既有厚重的历史底蕴，又充满人间烟火，是我成长的地方，也是无论走多远，都想要回来的港湾。</p>
+                <div class="card mb-4">
+                    <p>十堰地处秦巴山区，汉江穿城而过，得天独厚的地理环境造就了这里秀丽的山水风光。这里是武当山的所在地，道教文化源远流长；同时也是车城，有着独特的工业历史。除了风景名胜，还有许许多多地道的山城美食。每次放假回家，我都会去品尝熟悉的味道，漫步江边，感受独属于家乡的宁静与温柔。</p>
+                    <div class="mt-3">
+                        <span class="tag">#山城</span>
+                        <span class="tag">#武当山</span>
+                        <span class="tag">#郧阳三合汤</span>
+                        <span class="tag">#汉江</span>
+                        <span class="tag">#湖北十堰</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                    <div class="photo-item">
+                        <img src="hometown1.jpg" alt="武当山">
+                    </div>
+                    <div class="photo-item">
+                        <img src="hometown2.jpg" alt="十堰山城">
+                    </div>
+                    <div class="photo-item">
+                        <img src="hometown3.jpg" alt="十堰美食">
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div class="card">
+                        <h3 class="font-bold mb-1">⛰️ 武当山</h3>
+                        <p class="text-sm text-pink-500">世界文化遗产，道教名山，十堰最标志性地标。登顶可以看见壮阔云海，古建依山而建，历史氛围感十足，是来十堰必打卡的景点。</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold mb-1">🍜 十堰美食</h3>
+                        <p class="text-sm text-pink-500">郧阳三合汤是家乡招牌美食，酸辣鲜香，牛肉、粉条、饺子一碗汇聚，是独属于秦巴山城的地道风味。除此之外还有酸浆面、竹溪蒸盆等特色小吃。</p>
+                    </div>
+                    <div class="card">
+                        <h3 class="font-bold mb-1">🌊 汉江</h3>
+                        <p class="text-sm text-pink-500">南水北调中线的水源地，江水清澈平静，穿城而过。傍晚在江边散步，晚风拂面，温柔治愈，承载着许多我童年与少年的回忆。</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 联系方式 -->
+            <section id="contact" class="panel">
+                <div class="card mb-4">
+                    <p>💌 欢迎给我留言，期待和你交流 <span class="flower-deco">✿</span></p>
+                </div>
+                <h1 class="text-2xl font-bold mb-4">联系方式</h1>
+                <div class="card mb-4">
+                    <p class="mb-3">如果你想要和我交流经济学学习、学科竞赛、实习求职，或是旅行攻略、生活趣事，都可以通过下面的联系方式找到我，我会尽量回复消息。</p>
+                    <div class="info-line"><i class="fa fa-phone text-pink-500 mr-2"></i><b>电话：</b>18772744966</div>
+                    <div class="info-line"><i class="fa fa-wechat text-pink-500 mr-2"></i><b>微信：</b>dyf18772744966</div>
+                    <div class="info-line"><i class="fa fa-qq text-pink-500 mr-2"></i><b>QQ：</b>1457797448</div>
+                    <div class="info-line"><i class="fa fa-envelope text-pink-500 mr-2"></i><b>邮箱：</b>1457797448@qq.com</div>
+                    <p class="mt-3 text-pink-600">✨期待和你交流学习、旅行、生活相关话题！</p>
+                </div>
+                <div class="card">
+                    <h3 class="font-bold mb-3">📝留言板</h3>
+                    <p class="text-sm mb-3">在这里写下你想对我说的话，留下你的足迹。</p>
+                    <input class="mb-2 w-full p-2 rounded-lg border border-pink-200" id="name" type="text" placeholder="你的名字">
+                    <input class="mb-2 w-full p-2 rounded-lg border border-pink-200" id="checkCode" type="text" placeholder="验证码：dingyifei">
+                    <textarea class="w-full p-2 rounded-lg border border-pink-200" id="msg" rows="4" placeholder="写下想对我说的话..."></textarea>
+                    <button class="submit-btn mt-3" onclick="checkMsg()">发送留言</button>
+                    <p id="tip" class="mt-2 text-sm"></p>
+                </div>
+            </section>
+        </main>
+    </div>
+</div>
+
+<script>
+    function switchPanel(id){
+        document.querySelectorAll('.panel').forEach(p=>p.classList.remove('active'));
+        document.querySelectorAll('.folder-btn').forEach(b=>b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
+    function checkMsg(){
+        const name = document.getElementById('name').value.trim();
+        const code = document.getElementById('checkCode').value.trim();
+        const msg = document.getElementById('msg').value.trim();
+        const tip = document.getElementById('tip');
+        if(code!=='dingyifei'){
+            tip.textContent="验证码错误";
+            tip.style.color="#ff4780";
+            return;
+        }
+        if(!name||!msg){
+            tip.textContent="请填写名字和留言内容";
+            tip.style.color="#ff4780";
+            return;
+        }
+        tip.textContent="留言发送成功🥰";
+        tip.style.color="#22c55e";
+    }
+</script>
+</body>
+</html>
